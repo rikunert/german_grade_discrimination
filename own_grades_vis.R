@@ -46,7 +46,7 @@ dis_plot = function(
   #augment input data
   dis_dat$perc = cumsum(dis_dat$prop)#cumulative proportion
   dis_dat$highlight = rep('-', length(dis_dat$prop))
-  dis_dat$highlight[dis_dat$perc > percentiles[1] & dis_dat$perc <= percentiles[2]] = 'RK'
+  dis_dat$highlight[dis_dat$perc >= percentiles[1] & dis_dat$perc <= percentiles[2]] = 'RK'
   dis_dat$grades = factor(dis_dat$grades, levels = dis_dat$grades)
   
   #Plot distribution
@@ -63,8 +63,8 @@ dis_plot = function(
   
   #add line and annotation of highlight
   y = max(dis_dat$prop) + max(dis_dat$prop)/ 10#0.06#line height
-  x = mean(which(dis_dat$perc > percentiles[1] & dis_dat$perc <= percentiles[2]))
-  e = 0.4 + (x - min(which(dis_dat$perc > percentiles[1] & dis_dat$perc <= percentiles[2])))
+  x = mean(which(dis_dat$perc >= percentiles[1] & dis_dat$perc <= percentiles[2]))
+  e = 0.4 + (x - min(which(dis_dat$perc >= percentiles[1] & dis_dat$perc <= percentiles[2])))
   vl = max(dis_dat$prop)/ 50
   
   D = D +
@@ -119,7 +119,7 @@ VW = data.frame(prop = c(0.0004, 0.97, 9.19, 40.6, 49.2)/100,
                 grades = c('10 - 9.5', '9.4 - 8.5', '8.4 - 7.5', '7.4 - 6.5', '6.4 - 5.5'))
 p4_1 = dis_plot(dis_dat = VW, xlabel = 'Dutch VWO exam' ,
              caption_text = 'Source: Nuffic, 2014',
-             percentiles = c(0, 0.009704), high_text = 'My average grade: top 1%',
+             percentiles = c(0.0005, 0.0005 + 0.97)/100, high_text = 'My average grade: top 1%',
              title_text = 'Dutch grading scale')
 
 # Translate Dutch grades into German grades

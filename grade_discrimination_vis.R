@@ -20,18 +20,13 @@ library(openxlsx)
 ###################################################################################################
 #prepare general look of plots (very clean)
 
-theme_set(theme_bw(14)+#remove gray background, set font-size
+theme_set(theme_bw(14)+#number refers to font size
             theme(axis.line = element_line(colour = "black"),
                   panel.grid.major = element_blank(),
                   panel.grid.minor = element_blank(),
-                  #panel.background = element_blank(),
                   panel.border = element_blank(),
                   plot.title = element_text(hjust = 0.5, face="bold"),
-                  #legend.key = element_blank(),
-                  #legend.title = element_blank(),#remove all sorts of lines for a cleaner look
-                  legend.position = 'none',#specify the legend to be on top
-                  legend.direction = 'vertical'#specify the legend to be arranged vertically
-            ))
+                  legend.position = 'none'))
 
 ###################################################################################################
 #custom plotting function for grade distribution with highlights
@@ -41,19 +36,19 @@ dis_plot = function(
   xlabel = 'Abitur grade',
   xticklabels = dis_dat$grades,#customisable x-axis labels
   caption_text = 'Source: Kultusminister Konferenz, 2006',#true for German Abitur distribution 
-  percentiles = list(c(0, 0), c(0, 0)),#the percentiles which get highlighted first red, then blue
-  bar_colours = c("#000000", "#c00000", '#0000CD'),#first colour is non-highlight
+  percentiles = list(c(0, 0), c(0, 0)),#the percentiles which get highlighted first red, then blue; c(0,0) means no highlight
+  bar_colours = c("#000000", "#c00000", '#0000CD'),#first colour is non-highlight (black), red, blue
   high_text = c(' ', ' '),#The text of the highlight, first red then blue
-  title_text = ' '){#The text of the highlight
+  title_text = ' '){#plot title
   
   #augment input data
   dis_dat$perc = cumsum(dis_dat$prop)#cumulative proportion
   dis_dat$highlight = rep('-', length(dis_dat$prop))
   if(percentiles[[1]][1] != 0 || percentiles[[1]][2] != 0){
-  dis_dat$highlight[dis_dat$perc >= percentiles[[1]][1] & dis_dat$perc <= percentiles[[1]][2]] = 'correct'
+    dis_dat$highlight[dis_dat$perc >= percentiles[[1]][1] & dis_dat$perc <= percentiles[[1]][2]] = 'correct'
   }
   if(percentiles[[2]][1] != 0 || percentiles[[2]][2] != 0){
-  dis_dat$highlight[dis_dat$perc >= percentiles[[2]][1] & dis_dat$perc <= percentiles[[2]][2]] = 'false'
+    dis_dat$highlight[dis_dat$perc >= percentiles[[2]][1] & dis_dat$perc <= percentiles[[2]][2]] = 'false'
   }
   dis_dat$grades = factor(dis_dat$grades, levels = dis_dat$grades)#preserve factor order
   
@@ -71,10 +66,10 @@ dis_plot = function(
   
   #add line and annotation of highlight [[1]]
   if(percentiles[[1]][1] != 0 || percentiles[[1]][2] != 0){
-    y1 = max(dis_dat$prop) + max(dis_dat$prop)/ 3#0.06#line height
-    x1 = mean(which(dis_dat$perc >= percentiles[[1]][1] & dis_dat$perc <= percentiles[[1]][2]))
-    e1 = 0.4 + (x1 - min(which(dis_dat$perc >= percentiles[[1]][1] & dis_dat$perc <= percentiles[[1]][2])))
-    vl1 = max(dis_dat$prop)/ 50
+    y1 = max(dis_dat$prop) + max(dis_dat$prop)/ 3#line height
+    x1 = mean(which(dis_dat$perc >= percentiles[[1]][1] & dis_dat$perc <= percentiles[[1]][2]))#horizontal line midpoint
+    e1 = 0.4 + (x1 - min(which(dis_dat$perc >= percentiles[[1]][1] & dis_dat$perc <= percentiles[[1]][2])))#horizontal line extent on either side of midpoint
+    vl1 = max(dis_dat$prop)/ 50#vertical line extent
     
     D = D +
       geom_segment(aes(x=x1 - e1, xend=x1 + e1, y=y1, yend=y1), color = bar_colours[2], size = 1.3) +#horizontal line
@@ -86,7 +81,7 @@ dis_plot = function(
   
   #add line and annotation of highlight [[2]]
   if(percentiles[[2]][1] != 0 || percentiles[[2]][2] != 0){
-  y2 = max(dis_dat$prop) + max(dis_dat$prop)/ 10#0.06#line height
+  y2 = max(dis_dat$prop) + max(dis_dat$prop)/ 10#line height
   x2 = mean(which(dis_dat$perc >= percentiles[[2]][1] & dis_dat$perc <= percentiles[[2]][2]))
   e2 = 0.4 + (x2 - min(which(dis_dat$perc >= percentiles[[2]][1] & dis_dat$perc <= percentiles[[2]][2])))
   vl2 = max(dis_dat$prop)/ 50
@@ -150,8 +145,8 @@ mod_bay = function(Nmax, Nmin, Nd) return(max(c(1, 1 + (3*((Nmax - Nd)/(Nmax-Nmi
 # NL: https://www.nuffic.nl/publicaties/vind-een-publicatie/cijfervergelijking-examencijfers.pdf
 VW = data.frame(prop = c(0.0004, 0.97, 9.19, 40.6, 49.2)/100,
                 grades = c('10 - 9.5', '9.4 - 8.5', '8.4 - 7.5', '7.4 - 6.5', '6.4 - 5.5'))
-p1_1 = dis_plot(dis_dat = VW, xlabel = 'Dutch VWO exam' ,
-                caption_text = 'Source: Nuffic, 2014',
+p1 = dis_plot(dis_dat = VW, xlabel = 'Dutch VWO exam' ,
+                caption_text = sprintf('%s%100s', '@rikunert', 'Source: Nuffic, 2014'),
                 percentiles = list(c(0.0005, 0.0005 + 0.97)/100, c(0,0)), high_text = c('Actual: top 1%', ' '),
                 title_text = 'A Dutch 8.7 on the Dutch grading scale')
 
@@ -162,18 +157,18 @@ AB = data.frame(prop = AB_raw/sum(AB_raw),
                 perc = cumsum(AB_raw/sum(AB_raw)),#cumulative proportion
                 grades = as.character(format(seq(1, 4, 0.1), nsmall = 1)))
 D_trans_grade = round(mod_bay(10, 5.5, 8.7), digits = 1)
-D_trans_prop = AB$per[AB$grades == D_trans_grade]
-p1_2 = dis_plot(AB, xticklabels = c('1.0', '1.5', '2.0', '2.5', '3.0', '3.5', '4.0'),
+D_trans_prop = AB$perc[AB$grades == D_trans_grade]
+p2 = dis_plot(AB, xticklabels = c('1.0', '1.5', '2.0', '2.5', '3.0', '3.5', '4.0'),
                 percentiles = list(c(0, 0.009704),c(D_trans_prop-1e-10, D_trans_prop + 1e-10)),
                 high_text = c('Actual: top 1%',
                               sprintf('Translated: top %d%%', round(D_trans_prop * 100))),
                 title_text = 'A Dutch 8.7 translated to German grade')
 
-grid.arrange(grobs = list(p1_1,p1_2), ncol = 2, widths = c(2,2))
+grid.arrange(grobs = list(p1,p2), ncol = 2, widths = c(2,2))
 
 #Plot the general case
 NL_perc = rep(cumsum(VW$prop), each = 2)
-D_perc = sapply(seq(10, 5.5, -0.5), function(x) AB$per[AB$grades == format(round(mod_bay(10, 5.5, x), digits = 1), nsmall = 1)])
+D_perc = sapply(seq(10, 5.5, -0.5), function(x) AB$perc[AB$grades == format(round(mod_bay(10, 5.5, x), digits = 1), nsmall = 1)])
 perc_dat = data.frame(
   grades = seq(10, 5.5, -0.5),
   cum_prop_A = NL_perc,
@@ -230,11 +225,11 @@ FR_N = dat$Tous.baccalauréats[1:201] * dat$Tous.baccalauréats[202]
 FR = data.frame(prop = rev(FR_N[101:201]/sum(FR_N[101:201])),
                     grades = as.character(format(as.double(rev(dat$`Moyenne.à.l'issue.du.1er.groupe`[101:201]))), nsmall = 1))
                     
-p1_2 = dis_plot(FR, xlabel = 'French Baccalauréat grade',
-                caption_text = 'Source: French ministry of education, 2016',
+p = dis_plot(FR, xlabel = 'French Baccalauréat grade',
+                caption_text = sprintf('%s%218s', '@rikunert','Source: French ministry of education, 2016'),
                 xticklabels = c('20.0', '17.5', '15.0', '12.5', '10.0'),
                 title_text = 'The French grading scale')
-#p1_2
+p
 
 FR_perc = cumsum(FR$prop)
 D_perc = sapply(seq(20, 10, -0.1), function(x) AB$perc[AB$grades == format(round(mod_bay(20, 10, x), digits = 1), nsmall = 1)])
@@ -260,10 +255,10 @@ D
 SH = data.frame(prop = c(0.34, 0.26, 0.22)/sum(c(0.34, 0.26, 0.22)),#7% D (FAIL) are ignored, based on 23,794 pupils
                 grades = c('A', 'B', 'C'))
 
-p1_2 = dis_plot(SH, xlabel = 'Scottish Advanced Highers grade',
-                caption_text = 'Source: Scottish Qualifications Authority, 2016',
+p = dis_plot(SH, xlabel = 'Scottish Advanced Highers grade',
+                caption_text = sprintf('%s%217s', '@rikunert','Source: Scottish Qualifications Authority, 2016'),
                 title_text = 'The Scottish grading scale')
-p1_2
+p
 
 SH_perc = cumsum(SH$prop)
 D_perc = sapply(seq(3, 1, -1), function(x) AB$perc[AB$grades == format(round(mod_bay(3, 1, x), digits = 1), nsmall = 1)])

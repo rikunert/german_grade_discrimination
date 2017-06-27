@@ -35,7 +35,7 @@ dis_plot = function(
   dis_dat,#the data whose distribution we will plot (data frame with columns prop, and grades)
   xlabel = 'Abitur grade',
   xticklabels = dis_dat$grades,#customisable x-axis labels
-  caption_text = 'Source: Kultusminister Konferenz, 2006',#true for German Abitur distribution 
+  caption_text = 'Source: Kultusminister Konferenz, 2015',#true for German Abitur distribution 
   percentiles = list(c(0, 0), c(0, 0)),#the percentiles which get highlighted first red, then blue; c(0,0) means no highlight
   bar_colours = c("#000000", "#c00000", '#0000CD'),#first colour is non-highlight (black), red, blue
   high_text = c(' ', ' '),#The text of the highlight, first red then blue
@@ -151,15 +151,17 @@ p1 = dis_plot(dis_dat = VW, xlabel = 'Dutch VWO exam' ,
                 title_text = 'A Dutch 8.7 on the Dutch grading scale')
 
 # Translate Dutch grades into German grades
-#Source:  https://www.kmk.org/fileadmin/Dateien/pdf/Statistik/Aus_Abiturnoten_2006_2013.zip
-AB_raw = c(2529, 1833, 2696, 3702, 4239, 5377, 6498, 7574, 8726, 9392, 10546, 11359, 12556, 13296, 13303, 14664, 14752, 15410, 15720, 14903, 14450, 14333, 13206, 11865, 9102, 7435, 4525, 2084, 561, 62, 22)
+#https://www.kmk.org/fileadmin/Dateien/pdf/Statistik/Aus_Abiturnoten_2015.xls
+dat <- read.csv("https://raw.githubusercontent.com/rikunert/german_grade_discrimination/master/Aus_Abiturnoten_2015.csv",
+                sep = ';')
+AB_raw = dat$X.16[9:39]
 AB = data.frame(prop = AB_raw/sum(AB_raw),
                 perc = cumsum(AB_raw/sum(AB_raw)),#cumulative proportion
                 grades = as.character(format(seq(1, 4, 0.1), nsmall = 1)))
 D_trans_grade = round(mod_bay(10, 5.5, 8.7), digits = 1)
 D_trans_prop = AB$perc[AB$grades == D_trans_grade]
 p2 = dis_plot(AB, xticklabels = c('1.0', '1.5', '2.0', '2.5', '3.0', '3.5', '4.0'),
-                percentiles = list(c(0, 0.009704),c(D_trans_prop-1e-10, D_trans_prop + 1e-10)),
+                percentiles = list(c(0, 0.015),c(D_trans_prop-1e-10, D_trans_prop + 1e-10)),
                 high_text = c('Actual: top 1%',
                               sprintf('Translated: top %d%%', round(D_trans_prop * 100))),
                 title_text = 'A Dutch 8.7 translated to German grade')
@@ -179,12 +181,12 @@ D = cum_plot(perc_dat,
            caption_text = sprintf('%s%225s', '@rikunert', 'Source: Nuffic and KMK'),
            title_text = 'How Dutch grades get discriminated in Germany',
            in_legend = data.frame(x = c(7, 7, 7.7),
-                                  y = c(0.45, 0.8, 0.32),
+                                  y = c(0.45, 0.85, 0.32),
                                   label = c('Actual Dutch grading scale',
                                             'Dutch grading translated to German scale',
                                             'Discrimination'),
                                   angle = c(0, 0, 45))) +
-  annotate("segment", x = 8.7, xend = 8.7, y = 0.01, yend = 0.20,
+  annotate("segment", x = 8.7, xend = 8.7, y = 0.01, yend = 0.235,
            colour = "black", size = 2) +
   annotate('text', x = 8.65, y = 0.145, hjust = 0, 
            label = 'Dutch 8.7\n= German 1.9', colour = "black")
@@ -202,8 +204,8 @@ D = cum_plot(perc_dat,
          xlabel = 'Dutch grade',
          caption_text = sprintf('%s%225s', '@rikunert', 'Source: Nuffic and KMK'),
          title_text = 'The RWTH Aachen adjustment to grade translations',
-         in_legend = data.frame(x = c(7, 7, 6.7),
-                                y = c(0.45, 0.55, 0.58),
+         in_legend = data.frame(x = c(7, 7, 6.75),
+                                y = c(0.45, 0.58, 0.58),
                                 label = c('Actual Dutch grading scale',
                                           'Dutch grading translated to German scale',
                                           'Discrimination'),
